@@ -1,11 +1,17 @@
+using Entities;
+using System;
 using UnityEngine;
 
 public class Enemy : MonoBehaviour
 {
+    public event Action<Enemy> Died;
+
     [SerializeField] private HealthComponent m_health;
     [SerializeField] private EnemyData m_enemyData;
 
     private EnemyData m_data;
+
+    public HealthComponent health => m_health;
 
     // TODO Add HealthComponent
     // TODO Add Movement
@@ -39,8 +45,7 @@ public class Enemy : MonoBehaviour
 
     private void OnDied()
     {
-        Debug.Log("Enemy Died");
-        Destroy(gameObject);
+       Died?.Invoke(this);
     }
     
 }
