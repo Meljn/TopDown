@@ -6,8 +6,9 @@ public class Enemy : MonoBehaviour
 {
     public event Action<Enemy> Died;
 
+    [SerializeField] private AttackEnemySystem m_attack;
     [SerializeField] private HealthComponent m_health;
-    [SerializeField] private EnemyData m_enemyData;
+    [SerializeField] private EnemyStateMachine m_stateMachine;
 
     private EnemyData m_data;
 
@@ -17,18 +18,13 @@ public class Enemy : MonoBehaviour
     // TODO Add Movement
     // TODO Add AttackComponent
 
-
-    public void Awake()
+    private void Awake()
     {
-        Initialize(m_enemyData);
+        m_stateMachine??= new EnemyStateMachine();
     }
+
     private void OnEnable()
     {
-        m_health.ValueChanged += () =>
-        {
-            Debug.Log($"Health changed: {m_health.Value}");
-        };
-
         m_health.Died += OnDied;
     }
 
@@ -37,15 +33,47 @@ public class Enemy : MonoBehaviour
         m_health.Died -= OnDied;
     }
 
-    public void Initialize(EnemyData data)
+    private void Update()
+    {
+        if  (m_stateMachine.currentState is EnemyState.Dead || !m_data)
+        {
+            return;
+        }
+
+        UpdateState();
+    }
+
+    private void UpdateState()
+    {
+        
+    }
+
+    public void Initialize(EnemyData data, Transform playerTransform)
     {
         m_data = data;
         m_health.Initialize(data.health);
+        m_attack.Initialize(data.spell, data.attackTime, m_playerTransform);
+
+        m_playerTransform = playerTransform;
+        m_stateMachine ??= new EnemyStateMachine();
     }
 
     private void OnDied()
     {
        Died?.Invoke(this);
+    }
+
+    private bool IsInRange()
+    {
+        if (!m_playerTransform)
+        {
+            return false;
+        }
+    }
+
+    private void OnStateChanged(EnemyState previousState, EnemyState nextState)
+    {
+
     }
     
 }
